@@ -1,12 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Maven POM for Medical Store Dashboard
+  Java 17 | WAR Packaging | Servlet + JSTL | SLF4J Logging
+-->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <!-- Project Coordinates -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.example</groupId>
   <artifactId>medical-store-dashboard</artifactId>
   <version>1.0.0</version>
   <packaging>war</packaging>
 
+  <name>Medical Store Dashboard</name>
+  <description>Java Web Application for Medical Store Management Dashboard</description>
+  <url>http://localhost:8080/medical-store-dashboard</url>
+
+  <!-- Java & Encoding Settings -->
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
@@ -14,7 +28,9 @@
     <failOnMissingWebXml>false</failOnMissingWebXml>
   </properties>
 
+  <!-- Project Dependencies -->
   <dependencies>
+    <!-- Servlet API (provided by Tomcat) -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -22,12 +38,14 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- JSTL for JSP pages -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>jstl</artifactId>
       <version>1.2</version>
     </dependency>
 
+    <!-- Logging with SLF4J -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -38,10 +56,28 @@
       <artifactId>slf4j-simple</artifactId>
       <version>2.0.9</version>
     </dependency>
+
+    <!-- Optional: JSON Processing -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+
+    <!-- Optional: MySQL Connector for DB access -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.33</version>
+    </dependency>
   </dependencies>
 
+  <!-- Build Configuration -->
   <build>
+    <finalName>medical-store-dashboard</finalName>
+
     <plugins>
+      <!-- Compile Java Code -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -51,6 +87,7 @@
         </configuration>
       </plugin>
 
+      <!-- WAR Packaging for Deployment -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -59,6 +96,22 @@
           <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
       </plugin>
+
+      <!-- Optional: Clean old builds -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.3.2</version>
+      </plugin>
     </plugins>
   </build>
+
+  <!-- Repositories (Optional) -->
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+  </repositories>
+
 </project>
