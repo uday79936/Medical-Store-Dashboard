@@ -3,12 +3,12 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Medical Store Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Include Chart.js for analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -27,10 +27,27 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
+        nav {
+            background: #023e8a;
+            padding: 12px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 18px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
         h1 {
             margin: 0;
             font-size: 2em;
-            letter-spacing: 1px;
         }
 
         .container {
@@ -54,12 +71,11 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             text-align: center;
             padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: .3s;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
         }
 
         .card h3 {
@@ -74,11 +90,11 @@
         }
 
         .chart-container {
-            background: #fff;
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             padding: 20px;
             margin: 30px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
         table {
@@ -87,7 +103,7 @@
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 12px;
         }
 
         th, td {
@@ -105,7 +121,7 @@
         }
 
         tr:hover {
-            background-color: #e0f7fa;
+            background: #e0f7fa;
         }
 
         footer {
@@ -117,122 +133,134 @@
         }
     </style>
 </head>
+
 <body>
 
 <header>
     <h1>💊 Medical Store Dashboard</h1>
 </header>
 
+<nav>
+    <a href="addProduct.jsp">Add Product</a>
+    <a href="viewProducts.jsp">Manage Inventory</a>
+    <a href="orders.jsp">Orders</a>
+    <a href="logout.jsp">Logout</a>
+</nav>
+
 <div class="container">
 
-    <!-- KPI Section -->
+    <!-- KPI Cards -->
     <div class="kpi">
         <div class="card" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
             <h3>Total Stock</h3>
             <p>${totalStock}</p>
         </div>
+
         <div class="card" style="background: linear-gradient(135deg, #f6d365, #fda085);">
             <h3>Total Inventory Value</h3>
             <p>$${totalValue}</p>
         </div>
+
         <div class="card" style="background: linear-gradient(135deg, #a1c4fd, #c2e9fb);">
-            <h3>Products</h3>
-            <p><c:out value="${fn:length(products)}" /></p>
+            <h3>Total Products</h3>
+            <p>${fn:length(products)}</p>
         </div>
+
         <div class="card" style="background: linear-gradient(135deg, #d4fc79, #96e6a1);">
             <h3>Low Stock Alerts</h3>
             <p>
-                <c:set var="lowStockCount" value="0"/>
+                <c:set var="low" value="0"/>
                 <c:forEach var="p" items="${products}">
-                    <c:if test="${p.stock lt 10}">
-                        <c:set var="lowStockCount" value="${lowStockCount + 1}"/>
+                    <c:if test="${p.stock < 10}">
+                        <c:set var="low" value="${low + 1}"/>
                     </c:if>
                 </c:forEach>
-                ${lowStockCount}
+                ${low}
             </p>
         </div>
     </div>
 
-    <!-- Chart Section -->
+    <!-- Chart -->
     <div class="chart-container">
         <h2 style="text-align:center;">Stock Overview</h2>
-        <canvas id="stockChart"></canvas>
+
+        <c:if test="${not empty products}">
+            <canvas id="stockChart"></canvas>
+        </c:if>
+
+        <c:if test="${empty products}">
+            <p style="color:gray;text-align:center;">No products to display</p>
+        </c:if>
     </div>
 
-    <!-- Product Table -->
-    <div>
-        <h2 style="margin-top:20px;">Product List</h2>
+    <!-- Table -->
+
+    <h2>Product List</h2>
+
+    <c:if test="${not empty products}">
         <table>
             <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Stock</th>
-                    <th>Price</th>
-                </tr>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Stock</th>
+                <th>Price</th>
+            </tr>
             </thead>
             <tbody>
-                <c:forEach var="p" items="${products}">
-                    <tr>
-                        <td><c:out value="${p.code}" /></td>
-                        <td><c:out value="${p.name}" /></td>
-                        <td><c:out value="${p.stock}" /></td>
-                        <td>$<c:out value="${p.price}" /></td>
-                    </tr>
-                </c:forEach>
+
+            <c:forEach var="p" items="${products}">
+                <tr>
+                    <td>${p.code}</td>
+                    <td>${p.name}</td>
+                    <td>${p.stock}</td>
+                    <td>$${p.price}</td>
+                </tr>
+            </c:forEach>
+
             </tbody>
         </table>
-    </div>
+    </c:if>
+
+    <c:if test="${empty products}">
+        <p style="color:gray;margin-top:10px;">No products found.</p>
+    </c:if>
+
 </div>
 
 <footer>
-    © 2025 Medical Store Dashboard | Powered by JSP & JSTL
+    © 2025 Medical Store Dashboard
 </footer>
 
-<!-- Dynamic Chart -->
+<!-- Chart Script -->
 <script>
-    const ctx = document.getElementById('stockChart').getContext('2d');
-    const productNames = [
-        <c:forEach var="p" items="${products}">
-            "${p.name}",
-        </c:forEach>
-    ];
-    const productStock = [
-        <c:forEach var="p" items="${products}">
-            ${p.stock},
+    <c:if test="${not empty products}">
+    const names = [
+        <c:forEach var="p" items="${products}" varStatus="st">
+            "${p.name}"<c:if test="${!st.last}">,</c:if>
         </c:forEach>
     ];
 
-    new Chart(ctx, {
+    const stock = [
+        <c:forEach var="p" items="${products}" varStatus="st">
+            ${p.stock}<c:if test="${!st.last}">,</c:if>
+        </c:forEach>
+    ];
+
+    new Chart(document.getElementById("stockChart"), {
         type: 'bar',
         data: {
-            labels: productNames,
+            labels: names,
             datasets: [{
-                label: 'Stock Quantity',
-                data: productStock,
-                backgroundColor: [
-                    '#0077b6', '#00b4d8', '#48cae4', '#90e0ef', '#caf0f8'
-                ],
-                borderRadius: 8
+                label: 'Stock',
+                data: stock,
+                backgroundColor: '#00b4d8',
+                borderRadius: 6
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                title: {
-                    display: true,
-                    text: 'Product Stock Levels'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 5 }
-                }
-            }
-        }
+        options: { responsive: true }
     });
+    </c:if>
 </script>
 
 </body>
