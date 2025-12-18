@@ -1,8 +1,7 @@
 package com.example.medstore.servlet;
 
-
 import com.example.medstore.model.Product;
-
+import com.example.medstore.service.ProductService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,34 +9,56 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 @WebServlet(name = "DashboardServlet", urlPatterns = {"/dashboard"})
 public class DashboardServlet extends HttpServlet {
 
+    private final Logger logger = Logger.getLogger(DashboardServlet.class.getName());
+    private ProductService productService;
 
-@Override
-protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-// In a real app, fetch from DB. Here we create sample data.
-List<Product> products = new ArrayList<>();
-products.add(new Product("P001", "Paracetamol 500mg", 120, 1.50));
-products.add(new Product("P002", "Amoxicillin 250mg", 60, 3.75));
-products.add(new Product("P003", "Cough Syrup 100ml", 40, 4.50));
-products.add(new Product("P004", "Vitamin C 500mg", 200, 0.95));
+    @Override
+    public void init() {
+        // Service layer instance (later replaced by DB)
+        productService = new ProductService();
+        logger.info("DashboardServlet initialized successfully.");
+    }
 
+    @Override
+    protected void doGet(HttpServletRequest req,
+                         HttpServletResponse resp) throws ServletException, IOException {
 
-// Basic KPI calculations
-int totalStock = products.stream().mapToInt(Product::getStock).sum();
-double totalValue = products.stream().mapToDouble(p -> p.getStock() * p.getPrice()).sum();
+        try {
+            // UTF-8 support
+            req.setCharacterEncoding("UTF-8");
 
+            // Get all products
+            List<Product> products = productService.getAllProducts();
 
-req.setAttribute("products", products);
-req.setAttribute("totalStock", totalStock);
-req.setAttribute("totalValue", totalValue);
+            // Avoid NullPointerException
+            if (products == null) {
+                products = java.util.Collections.emptyList();
+            }
 
+            // KPI calculations
+            int totalStock = products.stream().mapToInt(Product::getStock).sum();
+            double totalValue = products.stream()
+                    .mapToDouble(p -> p.getStock() * p.getPrice())
+                    .sum();
 
-req.getRequestDispatcher("/index.jsp").forward(req, resp);
-}
+            // Attributes set for JSP
+            req.setAttribute("products", products);
+            req.setAttribute("totalStock", totalStock);
+            req.setAttribute("totalValue", totalValue);
+
+            // Forward to JSP dashboard
+            req.getRequestDispatcher("/index.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            logger.severe("Dashboard error: " + e.getMessage());
+            throw new ServletException("Unable to load dashboard.", e);
+        }
+    }
 }
