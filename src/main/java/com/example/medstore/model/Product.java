@@ -1,19 +1,50 @@
-package com.example.medstore.service;
+package com.example.medstore.model;
 
-import com.example.medstore.model.Product;
-import java.util.ArrayList;
-import java.util.List;
+public class Product {
 
-public class ProductService {
+    private String code;
+    private String name;
+    private int stock;
+    private double price;
 
-    public List<Product> getAllProducts() {
+    public Product() {}
 
-        List<Product> products = new ArrayList<>();
+    public Product(String code, String name, int stock, double price) {
+        this.code = code;
+        this.name = name;
+        this.stock = stock;
+        this.price = price;
+    }
 
-        products.add(new Product("P001", "Paracetamol", 50, 2.50));
-        products.add(new Product("P002", "Vitamin C", 200, 1.80));
-        products.add(new Product("P003", "Ibuprofen", 100, 3.20));
+    public String getCode() {
+        return code;
+    }
 
-        return products;
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }
