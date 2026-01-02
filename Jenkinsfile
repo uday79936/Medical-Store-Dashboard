@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'sonar' }
+    agent any   // 🔥 Single global agent (no stage-level agents)
 
     tools {
         jdk 'JDK17'
@@ -8,13 +8,15 @@ pipeline {
 
     environment {
         SONARQUBE_SERVER = 'http://34.229.39.175:9000'
-        SONARQUBE_TOKEN = 'squ_aa5e62c5e4b239d040227e37930671ede97fb85b'
-        MVN_SETTINGS = '/etc/maven/settings.xml'
-        NEXUS_URL = 'http://44.202.69.41:8081'
-        NEXUS_REPO = 'maven-releases'
-        NEXUS_GROUP = 'com.web.cal'
-        NEXUS_ARTIFACT = 'webapp-add'
-        TOMCAT_URL = 'http://34.227.226.60:8080/manager/text'
+        SONARQUBE_TOKEN  = 'squ_aa5e62c5e4b239d040227e37930671ede97fb85b'
+        MVN_SETTINGS     = '/etc/maven/settings.xml'
+
+        NEXUS_URL        = 'http://44.202.69.41:8081'
+        NEXUS_REPO       = 'maven-releases'
+        NEXUS_GROUP      = 'com.web.cal'
+        NEXUS_ARTIFACT   = 'webapp-add'
+
+        TOMCAT_URL       = 'http://34.227.226.60:8080/manager/text'
     }
 
     stages {
@@ -51,31 +53,35 @@ pipeline {
         stage('Build Artifact') {
             steps {
                 echo '⚙️ Building WAR...'
-                sh 'mvn clean package -DskipTests --settings ${MVN_SETTINGS}'
-                sh 'echo ✅ Build Completed!'
-                sh 'ls -lh target/*.war || echo "No WAR file found."'
+                sh '''
+                mvn clean package -DskipTests --settings ${MVN_SETTINGS}
+                echo "✅ Build Completed!"
+                ls -lh target/*.war
+                '''
             }
         }
 
         /* === Stage 4: Upload Artifact to Nexus === */
         stage('Upload Artifact to Nexus') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USR', passwordVariable: 'NEXUS_PSW')]) {
-                    sh '''#!/bin/bash
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'nexus',
+                        usernameVariable: 'NEXUS_USR',
+                        passwordVariable: 'NEXUS_PSW'
+                    )
+                ]) {
+                    sh '''
                     set -e
-                    WAR_FILE=$(find target -type f -name "*.war" | head -n1)
-                    if [[ ! -f "$WAR_FILE" ]]; then
-                        echo "❌ No WAR file found in target/"; exit 1
-                    fi
-
-                    FILE_NAME=$(basename "$WAR_FILE")
+                    WAR_FILE=$(find target -name "*.war" | head -n1)
                     VERSION="0.0.${BUILD_NUMBER}"
                     GROUP_PATH=$(echo "${NEXUS_GROUP}" | tr '.' '/')
 
-                    echo "📤 Uploading $FILE_NAME to Nexus as version $VERSION..."
+                    echo "📤 Uploading WAR to Nexus..."
                     curl -f -u "${NEXUS_USR}:${NEXUS_PSW}" --upload-file "$WAR_FILE" \
                     "${NEXUS_URL}/repository/${NEXUS_REPO}/${GROUP_PATH}/${NEXUS_ARTIFACT}/${VERSION}/${NEXUS_ARTIFACT}-${VERSION}.war"
-                    echo "✅ Artifact uploaded successfully to Nexus!"
+
+                    echo "✅ Artifact uploaded successfully!"
                     '''
                 }
             }
@@ -83,35 +89,34 @@ pipeline {
 
         /* === Stage 5: Deploy to Tomcat === */
         stage('Deploy to Tomcat') {
-            agent { label 'tomcat' }
             steps {
                 withCredentials([
-                    usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USR', passwordVariable: 'NEXUS_PSW'),
+                    usernamePassword(credentialsId: 'nexus',  usernameVariable: 'NEXUS_USR',  passwordVariable: 'NEXUS_PSW'),
                     usernamePassword(credentialsId: 'tomcat', usernameVariable: 'TOMCAT_USR', passwordVariable: 'TOMCAT_PSW')
                 ]) {
-                    sh '''#!/bin/bash
+                    sh '''
                     set -e
-                    cd /tmp || exit 1
+                    cd /tmp
                     rm -f *.war
 
                     VERSION="0.0.${BUILD_NUMBER}"
                     GROUP_PATH=$(echo "${NEXUS_GROUP}" | tr '.' '/')
                     WAR_URL="${NEXUS_URL}/repository/${NEXUS_REPO}/${GROUP_PATH}/${NEXUS_ARTIFACT}/${VERSION}/${NEXUS_ARTIFACT}-${VERSION}.war"
 
-                    echo "⬇️ Downloading WAR from Nexus: $WAR_URL"
+                    echo "⬇️ Downloading WAR from Nexus..."
                     curl -u "${NEXUS_USR}:${NEXUS_PSW}" -O "$WAR_URL"
 
-                    WAR_FILE=$(basename "$WAR_URL")
                     APP_NAME="${NEXUS_ARTIFACT}"
 
-                    echo "🧹 Undeploying old app (if exists)..."
-                    curl -u "${TOMCAT_USR}:${TOMCAT_PSW}" "${TOMCAT_URL}/undeploy?path=/${APP_NAME}" || true
+                    echo "🧹 Undeploying old application..."
+                    curl -u "${TOMCAT_USR}:${TOMCAT_PSW}" \
+                      "${TOMCAT_URL}/undeploy?path=/${APP_NAME}" || true
 
                     echo "🚀 Deploying new WAR to Tomcat..."
-                    curl -u "${TOMCAT_USR}:${TOMCAT_PSW}" --upload-file "$WAR_FILE" \
-                    "${TOMCAT_URL}/deploy?path=/${APP_NAME}&update=true"
+                    curl -u "${TOMCAT_USR}:${TOMCAT_PSW}" --upload-file "${APP_NAME}-${VERSION}.war" \
+                      "${TOMCAT_URL}/deploy?path=/${APP_NAME}&update=true"
 
-                    echo "✅ Deployment successful! Application updated."
+                    echo "✅ Deployment successful!"
                     '''
                 }
             }
