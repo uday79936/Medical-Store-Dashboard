@@ -1,35 +1,37 @@
 package com.example.medstore.service;
 
-import java.util.*;
+import java.util.List;
 import com.example.medstore.dao.ProductDAO;
 import com.example.medstore.model.Product;
 
 public class ProductService {
 
-    ProductDAO dao=new ProductDAO();
+    private ProductDAO dao = new ProductDAO();
 
-    public List<Product> getProducts(){
-
+    // Get all products
+    public List<Product> getProducts() {
         return dao.getAllProducts();
     }
 
-    public int calculateTotalStock(List<Product> list){
+    // Calculate total stock
+    public int calculateTotalStock(List<Product> products) {
 
-        int total=0;
+        int total = 0;
 
-        for(Product p:list){
-            total+=p.getStock();
+        for (Product p : products) {
+            total += p.getStock();
         }
 
         return total;
     }
 
-    public double calculateTotalValue(List<Product> list){
+    // Calculate total inventory value
+    public double calculateTotalValue(List<Product> products) {
 
-        double total=0;
+        double total = 0;
 
-        for(Product p:list){
-            total+=p.getStock()*p.getPrice();
+        for (Product p : products) {
+            total += p.getStock() * p.getPrice();
         }
 
         return total;
