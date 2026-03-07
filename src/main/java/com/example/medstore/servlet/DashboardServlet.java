@@ -5,9 +5,7 @@ import com.example.medstore.service.ProductService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,7 +19,6 @@ public class DashboardServlet extends HttpServlet {
 
     @Override
     public void init() {
-        // Service layer instance (later replaced by DB)
         productService = new ProductService();
         logger.info("DashboardServlet initialized successfully.");
     }
@@ -31,18 +28,11 @@ public class DashboardServlet extends HttpServlet {
                          HttpServletResponse resp) throws ServletException, IOException {
 
         try {
-            req.setCharacterEncoding("UTF-8");
 
-            List<Product> products = productService.getAllProducts();
+            List<Product> products = productService.getProducts();
 
-            if (products == null) {
-                products = java.util.Collections.emptyList();
-            }
-
-            int totalStock = products.stream().mapToInt(Product::getStock).sum();
-            double totalValue = products.stream()
-                    .mapToDouble(p -> p.getStock() * p.getPrice())
-                    .sum();
+            int totalStock = productService.calculateTotalStock(products);
+            double totalValue = productService.calculateTotalValue(products);
 
             req.setAttribute("products", products);
             req.setAttribute("totalStock", totalStock);
@@ -51,8 +41,9 @@ public class DashboardServlet extends HttpServlet {
             req.getRequestDispatcher("/index.jsp").forward(req, resp);
 
         } catch (Exception e) {
+
             logger.severe("Dashboard error: " + e.getMessage());
-            throw new ServletException("Unable to load dashboard.", e);
+            throw new ServletException("Unable to load dashboard", e);
         }
     }
 }
