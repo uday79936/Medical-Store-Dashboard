@@ -1,20 +1,45 @@
 package com.example.medstore.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.example.medstore.model.Product;
+import com.example.medstore.util.DBConnection;
 
 public class ProductDAO {
 
-    // Method to get all products
     public List<Product> getAllProducts() {
 
         List<Product> products = new ArrayList<>();
 
-        products.add(new Product("P001", "Paracetamol", 100, 2.5));
-        products.add(new Product("P002", "Crocin", 80, 3.0));
-        products.add(new Product("P003", "Aspirin", 60, 1.8));
-        products.add(new Product("P004", "Vitamin C", 120, 2.2));
+        try {
+
+            Connection con = DBConnection.getConnection();
+
+            String query = "SELECT * FROM products";
+
+            PreparedStatement ps = con.prepareStatement(query);
+
+            ResultSet rs = ps.executeQuery();
+
+            while(rs.next()) {
+
+                Product p = new Product(
+                        rs.getString("id"),
+                        rs.getString("name"),
+                        rs.getInt("quantity"),
+                        rs.getDouble("price")
+                );
+
+                products.add(p);
+            }
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
 
         return products;
     }
