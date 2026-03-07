@@ -1,19 +1,37 @@
 package com.example.medstore.service;
 
+import java.util.*;
+import com.example.medstore.dao.ProductDAO;
 import com.example.medstore.model.Product;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ProductService {
 
-    public List<Product> getAllProducts() {
+    ProductDAO dao=new ProductDAO();
 
-        List<Product> products = new ArrayList<>();
+    public List<Product> getProducts(){
 
-        products.add(new Product("1", "Paracetamol", 50, 2.50));
-        products.add(new Product("2", "Vitamin C", 200, 1.80));
-        products.add(new Product("3", "Ibuprofen", 100, 3.20));
+        return dao.getAllProducts();
+    }
 
-        return products;
+    public int calculateTotalStock(List<Product> list){
+
+        int total=0;
+
+        for(Product p:list){
+            total+=p.getStock();
+        }
+
+        return total;
+    }
+
+    public double calculateTotalValue(List<Product> list){
+
+        double total=0;
+
+        for(Product p:list){
+            total+=p.getStock()*p.getPrice();
+        }
+
+        return total;
     }
 }
