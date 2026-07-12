@@ -5,45 +5,84 @@ import com.example.medstore.service.ProductService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @WebServlet(name = "DashboardServlet", urlPatterns = {"/dashboard"})
 public class DashboardServlet extends HttpServlet {
 
-    private final Logger logger = Logger.getLogger(DashboardServlet.class.getName());
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER =
+            Logger.getLogger(DashboardServlet.class.getName());
+
+    private static final String DASHBOARD_PAGE = "/index.jsp";
+
     private ProductService productService;
 
     @Override
-    public void init() {
-        productService = new ProductService();
-        logger.info("DashboardServlet initialized successfully.");
+    public void init() throws ServletException {
+
+        super.init();
+
+        try {
+            productService = new ProductService();
+            LOGGER.info("DashboardServlet initialized successfully.");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to initialize ProductService.", e);
+            throw new ServletException("Initialization failed.", e);
+        }
     }
 
     @Override
-    protected void doGet(HttpServletRequest req,
-                         HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response)
+            throws ServletException, IOException {
 
         try {
 
+            // Fetch products
             List<Product> products = productService.getProducts();
 
+            // Calculate dashboard statistics
             int totalStock = productService.calculateTotalStock(products);
             double totalValue = productService.calculateTotalValue(products);
 
-            req.setAttribute("products", products);
-            req.setAttribute("totalStock", totalStock);
-            req.setAttribute("totalValue", totalValue);
+            // Set request attributes
+            request.setAttribute("products", products);
+            request.setAttribute("totalStock", totalStock);
+            request.setAttribute("totalValue", totalValue);
 
-            req.getRequestDispatcher("/index.jsp").forward(req, resp);
+            // Forward to JSP
+            request.getRequestDispatcher(DASHBOARD_PAGE)
+                   .forward(request, response);
 
         } catch (Exception e) {
 
-            logger.severe("Dashboard error: " + e.getMessage());
-            throw new ServletException("Unable to load dashboard", e);
+            LOGGER.log(Level.SEVERE,
+                    "Error while loading dashboard.", e);
+
+            request.setAttribute(
+                    "errorMessage",
+                    "Unable to load dashboard. Please try again later."
+            );
+
+            request.getRequestDispatcher(DASHBOARD_PAGE)
+                   .forward(request, response);
         }
+    }
+
+    @Override
+    public void destroy() {
+
+        LOGGER.info("DashboardServlet destroyed.");
+
+        super.destroy();
     }
 }
