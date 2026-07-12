@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
@@ -8,7 +8,6 @@
 <head>
 
 <meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Medical Store Dashboard</title>
@@ -17,90 +16,86 @@
 
 <style>
 
-body{
-font-family:'Segoe UI',sans-serif;
-background:linear-gradient(135deg,#e3f2fd,#fce4ec);
+*{
 margin:0;
 padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",Arial,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+color:#333;
 }
 
 header{
-background:linear-gradient(90deg,#0077b6,#00b4d8);
+background:#0d6efd;
 color:white;
 padding:20px;
 text-align:center;
-box-shadow:0 2px 8px rgba(0,0,0,0.2);
+box-shadow:0 3px 8px rgba(0,0,0,.2);
 }
 
 nav{
-background:#023e8a;
-padding:12px;
+background:#0b5ed7;
+padding:15px;
 text-align:center;
 }
 
 nav a{
 color:white;
-margin:0 18px;
 text-decoration:none;
+margin:0 18px;
 font-weight:bold;
-font-size:15px;
+transition:.3s;
 }
 
 nav a:hover{
-text-decoration:underline;
-}
-
-h1{
-margin:0;
-font-size:2em;
+color:#ffd43b;
 }
 
 .container{
-padding:30px;
 max-width:1200px;
 margin:auto;
+padding:30px;
 }
 
-.kpi{
-display:flex;
-flex-wrap:wrap;
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:20px;
-justify-content:space-between;
+margin-bottom:30px;
 }
 
 .card{
-flex:1;
-min-width:250px;
 background:white;
+padding:25px;
 border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+box-shadow:0 5px 12px rgba(0,0,0,.1);
 text-align:center;
-padding:20px;
 transition:.3s;
 }
 
 .card:hover{
-transform:translateY(-5px);
+transform:translateY(-6px);
 }
 
 .card h3{
 margin-bottom:10px;
-color:#444;
+color:#666;
 }
 
-.card p{
-font-size:1.8em;
-font-weight:bold;
-color:#0077b6;
+.card h2{
+color:#0d6efd;
 }
 
-.chart-container{
+.chart-box{
 background:white;
-border-radius:12px;
 padding:20px;
-margin:30px 0;
-box-shadow:0 3px 10px rgba(0,0,0,0.1);
-height:400px;
+border-radius:12px;
+box-shadow:0 5px 12px rgba(0,0,0,.1);
+margin-bottom:35px;
+height:420px;
 }
 
 table{
@@ -109,33 +104,64 @@ border-collapse:collapse;
 background:white;
 border-radius:10px;
 overflow:hidden;
-margin-top:12px;
+box-shadow:0 5px 12px rgba(0,0,0,.1);
 }
 
-th,td{
-padding:12px 16px;
-text-align:left;
-}
-
-th{
-background-color:#00b4d8;
+table th{
+background:#0d6efd;
 color:white;
+padding:14px;
 }
 
-tr:nth-child(even){
-background-color:#f2f2f2;
+table td{
+padding:12px;
+text-align:center;
+border-bottom:1px solid #ddd;
 }
 
-tr:hover{
-background:#e0f7fa;
+table tr:nth-child(even){
+background:#f8f9fa;
+}
+
+table tr:hover{
+background:#eef5ff;
+}
+
+.low-stock{
+background:#ffe5e5 !important;
+color:#c1121f;
+font-weight:bold;
+}
+
+.success{
+background:#d4edda;
+color:#155724;
+padding:15px;
+margin-bottom:20px;
+border-radius:6px;
+}
+
+.error{
+background:#f8d7da;
+color:#721c24;
+padding:15px;
+margin-bottom:20px;
+border-radius:6px;
+}
+
+.empty{
+text-align:center;
+padding:25px;
+color:gray;
+font-size:18px;
 }
 
 footer{
-text-align:center;
-padding:15px;
-background:#0077b6;
-color:white;
 margin-top:40px;
+background:#0d6efd;
+color:white;
+text-align:center;
+padding:18px;
 }
 
 </style>
@@ -145,101 +171,125 @@ margin-top:40px;
 <body>
 
 <header>
+
 <h1>💊 Medical Store Dashboard</h1>
+
 </header>
 
 <nav>
+
+<a href="dashboard">Dashboard</a>
 <a href="addProduct.jsp">Add Product</a>
-<a href="viewProducts.jsp">Manage Inventory</a>
+<a href="viewProducts.jsp">Inventory</a>
 <a href="orders.jsp">Orders</a>
 <a href="logout.jsp">Logout</a>
+
 </nav>
 
 <div class="container">
 
-<!-- KPI Cards -->
-
-<div class="kpi">
-
-<div class="card" style="background:linear-gradient(135deg,#a8edea,#fed6e3);">
-<h3>Total Stock</h3>
-<p><c:out value="${totalStock}"/></p>
+<c:if test="${not empty successMessage}">
+<div class="success">
+${successMessage}
 </div>
-
-<div class="card" style="background:linear-gradient(135deg,#f6d365,#fda085);">
-<h3>Total Inventory Value</h3>
-<p>$<c:out value="${totalValue}"/></p>
-</div>
-
-<div class="card" style="background:linear-gradient(135deg,#a1c4fd,#c2e9fb);">
-<h3>Total Products</h3>
-<p><c:out value="${fn:length(products)}"/></p>
-</div>
-
-<div class="card" style="background:linear-gradient(135deg,#d4fc79,#96e6a1);">
-<h3>Low Stock Alerts</h3>
-
-<p>
-
-<c:set var="low" value="0"/>
-
-<c:forEach var="p" items="${products}">
-<c:if test="${p.stock < 10}">
-<c:set var="low" value="${low + 1}"/>
 </c:if>
+
+<c:if test="${not empty errorMessage}">
+<div class="error">
+${errorMessage}
+</div>
+</c:if>
+
+<c:set var="lowStock" value="0"/>
+
+<c:forEach items="${products}" var="p">
+
+<c:if test="${p.stock < 10}">
+<c:set var="lowStock" value="${lowStock+1}"/>
+</c:if>
+
 </c:forEach>
 
-<c:out value="${low}"/>
+<div class="cards">
 
-</p>
+<div class="card">
+<h3>Total Products</h3>
+<h2>${fn:length(products)}</h2>
+</div>
 
+<div class="card">
+<h3>Total Stock</h3>
+<h2>${totalStock}</h2>
+</div>
+
+<div class="card">
+<h3>Inventory Value</h3>
+<h2>$${totalValue}</h2>
+</div>
+
+<div class="card">
+<h3>Low Stock</h3>
+<h2>${lowStock}</h2>
 </div>
 
 </div>
 
-<!-- Chart Section -->
+<div class="chart-box">
 
-<div class="chart-container">
+<h2 style="text-align:center;margin-bottom:20px;">
+Stock Overview
+</h2>
 
-<h2 style="text-align:center;">Stock Overview</h2>
+<c:choose>
 
-<c:if test="${not empty products}">
+<c:when test="${not empty products}">
 <canvas id="stockChart"></canvas>
-</c:if>
+</c:when>
 
-<c:if test="${empty products}">
-<p style="color:gray;text-align:center;">No products to display</p>
-</c:if>
+<c:otherwise>
+<div class="empty">
+No products available.
+</div>
+</c:otherwise>
+
+</c:choose>
 
 </div>
 
-<!-- Product Table -->
+<h2 style="margin-bottom:15px;">
+Product Inventory
+</h2>
 
-<h2>Product List</h2>
+<c:choose>
 
-<c:if test="${not empty products}">
+<c:when test="${not empty products}">
 
 <table>
 
 <thead>
+
 <tr>
-<th>Code</th>
-<th>Name</th>
+<th>Product Code</th>
+<th>Product Name</th>
 <th>Stock</th>
-<th>Price</th>
+<th>Price ($)</th>
 </tr>
+
 </thead>
 
 <tbody>
 
-<c:forEach var="p" items="${products}">
+<c:forEach items="${products}" var="p">
 
-<tr>
+<tr class="${p.stock < 10 ? 'low-stock' : ''}">
 
-<td><c:out value="${p.code}"/></td>
-<td><c:out value="${p.name}"/></td>
-<td><c:out value="${p.stock}"/></td>
-<td>$<c:out value="${p.price}"/></td>
+<td>${p.code}</td>
+
+<td>${p.name}</td>
+
+<td>${p.stock}</td>
+
+<td>${p.price}</td>
 
 </tr>
 
@@ -249,70 +299,104 @@ margin-top:40px;
 
 </table>
 
-</c:if>
+</c:when>
 
-<c:if test="${empty products}">
-<p style="color:gray;margin-top:10px;">No products found.</p>
-</c:if>
+<c:otherwise>
+
+<div class="empty">
+
+No products found.
+
+</div>
+
+</c:otherwise>
+
+</c:choose>
 
 </div>
 
 <footer>
 
-© 2025 Medical Store Dashboard
+© 2026 Medical Store Management System
 
 </footer>
 
-<!-- Chart Script -->
+<c:if test="${not empty products}">
 
 <script>
 
-<c:if test="${not empty products}">
-
-const names = [
-
-<c:forEach var="p" items="${products}" varStatus="st">
-
-"<c:out value='${p.name}'/>"<c:if test="${!st.last}">,</c:if>
-
+const labels=[
+<c:forEach items="${products}" var="p" varStatus="s">
+"${p.name}"<c:if test="${!s.last}">,</c:if>
 </c:forEach>
-
 ];
 
-const stock = [
-
-<c:forEach var="p" items="${products}" varStatus="st">
-
-<c:out value="${p.stock}"/><c:if test="${!st.last}">,</c:if>
-
+const stock=[
+<c:forEach items="${products}" var="p" varStatus="s">
+${p.stock}<c:if test="${!s.last}">,</c:if>
 </c:forEach>
-
 ];
 
 new Chart(document.getElementById("stockChart"),{
 
-type:'bar',
+type:"bar",
 
 data:{
-labels:names,
+
+labels:labels,
+
 datasets:[{
-label:'Stock',
+
+label:"Available Stock",
+
 data:stock,
-backgroundColor:'#00b4d8',
-borderRadius:6
+
+backgroundColor:[
+"#0d6efd",
+"#198754",
+"#ffc107",
+"#dc3545",
+"#6610f2",
+"#20c997",
+"#fd7e14",
+"#6f42c1"
+],
+
+borderRadius:8
+
 }]
+
 },
 
 options:{
+
 responsive:true,
-maintainAspectRatio:false
+
+maintainAspectRatio:false,
+
+plugins:{
+
+legend:{
+display:true
+}
+
+},
+
+scales:{
+
+y:{
+beginAtZero:true
+}
+
+}
+
 }
 
 });
 
-</c:if>
-
 </script>
+
+</c:if>
 
 </body>
 </html>
